@@ -2,15 +2,20 @@
 
 PulseHammer — High-RPS HTTP bench (open-loop, multi-process) with auto-worker sizing.
 
-PulseHammer is a small, fast Python tool to generate sustained HTTP request load (requests/sec) using an open-loop scheduler and multiple worker processes. It focuses on raw throughput and simple, predictable request pacing.
+PulseHammer is a small, fast Python tool to generate sustained HTTP request load (requests/sec) using an open-loop scheduler and multiple worker processes. It focuses on raw throughput, real data tracking, and provides detailed performance metrics.
 
 ## Features
 
 - Open-loop request scheduling for steady RPS targets
 - Multi-process worker model with auto worker sizing
+- **Real data tracking**: Actual response size, data transfer rates
+- **Enhanced error reporting**: Categorized error types (Timeout, Connection, etc.)
+- **Advanced statistics**: Median, standard deviation, comprehensive latency percentiles
+- **CSV export**: Export detailed results for analysis
+- **Real-time progress**: Live progress display during test execution
 - Per-worker concurrency cap to control in-flight requests
 - Minimal dependencies: aiohttp (optional uvloop for faster event loop)
-- Simple CLI, prints a concise multi-process report (throughput, success, latency percentiles, status codes)
+- Simple CLI, prints comprehensive multi-process reports
 
 ## Install
 
@@ -28,67 +33,89 @@ Or install only the runtime requirements directly:
 pip install aiohttp uvloop
 ```
 
-Note: `uvloop` is optional but recommended on supported platforms for better async performance. On Windows, `uvloop` may not be available — PulseHammer will fall back to the built-in event loop.
+> Note: `uvloop` is optional but recommended on supported platforms for better async performance. On Windows, `uvloop` may not be available — PulseHammer will fall back to the built-in event loop.
 
 ## Quick usage
 
-Basic example (run for 30s at 15k RPS):
+Basic example (run for 60s at 15k RPS):
 
 ```powershell
-python main.py https://api.example.com/health --rps 15000 -D 60 --auto-workers
+python pulsehammer.py https://api.example.com/health --rps 15000 -D 60 --auto-workers
+```
+
+With real-time progress display:
+
+```powershell
+python pulsehammer.py https://api.example.com/health --rps 10000 -D 30 --progress
+```
+
+Export results to CSV for analysis:
+
+```powershell
+python pulsehammer.py https://api.example.com/api --rps 5000 -D 60 --csv results.csv
 ```
 
 Common example with JSON body and custom header:
 
 ```powershell
-python main.py https://api.example.com/submit --rps 5000 -D 30 -X POST --json '{"id":123}' -H "Authorization: Bearer TOKEN"
+python pulsehammer.py https://api.example.com/submit --rps 5000 -D 30 -X POST --json '{"id":123}' -H "Authorization: Bearer TOKEN"
+```
+
+Full featured test with progress and CSV export:
+
+```powershell
+python pulsehammer.py https://api.example.com/api --rps 10000 -D 120 --progress --csv results.csv -H "Authorization: Bearer TOKEN"
 ```
 
 If you want to explicitly set the number of worker processes:
 
 ```powershell
-python main.py https://api.example.com/health --rps 10000 -w 4
+python pulsehammer.py https://api.example.com/health --rps 10000 -w 4
 ```
 
 ## CLI options
 
-PulseHammer exposes the following options (shortened):
+PulseHammer exposes the following options:
 
-- url: target URL (positional)
-- -X, --method: HTTP method (default: GET)
-- -D, --duration: Duration in seconds (default: 30)
-- --rps: Target total RPS (required)
-- -w, --workers: Number of worker processes (default: auto)
-- --auto-workers / --no-auto-workers: Enable/disable auto worker sizing
-- -c, --concurrency: Per-worker in-flight cap (default: 256)
-- -t, --timeout: Per-request timeout in seconds (default: 10)
-- -H, --header: Add header (can be used multiple times)
-- --data: Raw body
-- --json: JSON body (string)
-- --data-file: Read body from file
-- --warmup: Warmup request count (excluded from final stats)
-- --insecure: Disable TLS verify
-- --no-read-body: Do not read full response body (drains minimally)
+- `url`: target URL (positional, required)
+- `-X, --method`: HTTP method (default: GET)
+- `-D, --duration`: Duration in seconds (default: 30)
+- `--rps`: Target total RPS (required)
+- `-w, --workers`: Number of worker processes (default: auto)
+- `--auto-workers / --no-auto-workers`: Enable/disable auto worker sizing
+- `-c, --concurrency`: Per-worker in-flight cap (default: 256)
+- `-t, --timeout`: Per-request timeout in seconds (default: 10)
+- `-H, --header`: Add header (can be used multiple times)
+- `--data`: Raw body
+- `--json`: JSON body (string)
+- `--warmup`: Warmup request count (excluded from final stats)
+- `--insecure`: Disable TLS verify
+- `--csv`: Export results to CSV file
+- `--progress`: Show real-time progress during test
 
 ## Tuning tips
 
-- Per-worker target RPS and concurrency: by default PulseHammer computes a number of workers so that each worker targets ~2500 RPS. You can adjust concurrency (`-c`) to limit in-flight requests per worker if you see connection or resource pressure.
-- Use `--no-read-body` if you don't need responses and want less client-side bandwidth/CPU usage. This still attempts to minimally drain the response so connections are reusable.
-- If available, install `uvloop` for better event loop performance on non-Windows platforms.
-- Start with lower RPS and ramp up while observing the server and network to avoid accidental overload.
+- **Per-worker target RPS and concurrency**: By default PulseHammer computes a number of workers so that each worker targets ~2500 RPS. You can adjust concurrency (`-c`) to limit in-flight requests per worker if you see connection or resource pressure.
+- **uvloop**: If available, install `uvloop` for better event loop performance on non-Windows platforms.
+- **Gradual ramp-up**: Start with lower RPS and ramp up while observing the server and network to avoid accidental overload.
+- **CSV export**: Use `--csv` to export detailed metrics for further analysis in Excel, Google Sheets, or data visualization tools.
+- **Progress monitoring**: Use `--progress` to see real-time progress and estimate completion time during long tests.
 
 ## Output
 
-After the run completes, PulseHammer prints a multi-process report with:
+After the run completes, PulseHammer prints a comprehensive multi-process report with:
 
 - Total requests, duration, throughput (req/s)
+- **Data transferred** and transfer rate (MB/s, GB/s, etc.)
 - Success/failure counts and percentages
-- Latency: min, avg, p50, p90, p95, p99 (seconds)
+- **Latency statistics**: min, avg, median, max, standard deviation
+- **Latency percentiles**: p50, p90, p95, p99 (seconds)
 - Status code distribution
+- **Error type breakdown**: Categorized errors (Timeout, ConnectionError, ClientError, etc.)
 
 ## License
 
-This project includes a `LICENSE` file. The repository is distributed under the terms shown in that file.
+PulseHammer is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
