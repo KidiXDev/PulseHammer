@@ -1,4 +1,12 @@
-# PulseHammer
+<p align="center">
+	<img src="logo.png" alt="PulseHammer" width="220" />
+</p>
+
+<p align="center">
+	<img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License" />
+	<img src="https://img.shields.io/badge/python-3.8%20|%203.9%20|%203.10-blue.svg" alt="Python" />
+	<img src="https://img.shields.io/badge/status-Experimental-yellow.svg" alt="Status" />
+</p>
 
 PulseHammer — High-RPS HTTP bench (open-loop, multi-process) with auto-worker sizing.
 
