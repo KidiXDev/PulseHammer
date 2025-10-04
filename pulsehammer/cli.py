@@ -39,6 +39,8 @@ def build_parser():
     p.add_argument("--insecure", action="store_true",
                    help="Disable TLS verify")
     p.add_argument("--csv", help="Export results to CSV file")
+    p.add_argument(
+        "--html", help="Export results to a self-contained HTML report file")
     p.add_argument("--progress", action="store_true",
                    help="Show real-time progress")
     return p
@@ -138,6 +140,13 @@ def run(args):
 
     if args.csv:
         save_to_csv(agg, actual_duration, args.csv)
+
+    if getattr(args, 'html', None):
+        try:
+            from .report import save_report_html
+            save_report_html(agg, actual_duration, args.html)
+        except Exception as e:
+            print(f"[Export] Failed to generate HTML report: {e}")
 
 
 __all__ = ['build_parser', 'choose_workers', 'run']
