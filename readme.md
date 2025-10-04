@@ -1,3 +1,5 @@
+# PulseHammer
+
 <p align="center">
     <img src="logo.png" alt="PulseHammer" width="220" />
 </p>
