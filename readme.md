@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="logo.png" alt="PulseHammer" width="220" />
+    <img src="logo.png" alt="PulseHammer" width="220" style="background-color:#ffffff;padding:8px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />
 </p>
 
 <p align="center">
